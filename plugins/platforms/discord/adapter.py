@@ -5934,7 +5934,14 @@ class DiscordAdapter(BasePlatformAdapter):
                 allowed_role_ids=self._allowed_role_ids,
             )
 
-            msg = await channel.send(embed=embed, view=view)
+            # Mirror the picker payload in plain content — embeds are invisible
+            # on some clients (see send_exec_approval).
+            model_desc = f"`{current_model or 'unknown'}` on {provider_label}"
+            content = self._self_contained_prompt_content(
+                "⚙ **Select a provider**",
+                f"Current model: {model_desc}\n\nSelect a provider from the dropdown below.",
+            )
+            msg = await channel.send(content=content, embed=embed, view=view)
             view._message = msg  # store for on_timeout expiration editing
             return SendResult(success=True, message_id=str(msg.id))
 
